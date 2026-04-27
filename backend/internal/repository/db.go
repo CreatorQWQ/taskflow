@@ -2,8 +2,10 @@ package repository
 
 import (
 	"fmt"
+
 	"github.com/CreatorQWQ/taskflow/internal/config"
-	"github.com/CreatorQWQ/taskflow/pkg/logger" 
+	"github.com/CreatorQWQ/taskflow/internal/model"
+	"github.com/CreatorQWQ/taskflow/pkg/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -21,8 +23,12 @@ func NewRepository(cfg *config.Config) *Repository {
 		logger.Log.Fatalf("数据库连接失败: %v", err)
 	}
 
+	// 自动迁移数据库表
+	if err := db.AutoMigrate(&model.User{}); err != nil {
+		logger.Log.Fatalf("数据库迁移失败: %v", err)
+	}
 	logger.Log.Info("数据库初始化成功")
-	
+
 	return &Repository{
 		DB: db,
 	}

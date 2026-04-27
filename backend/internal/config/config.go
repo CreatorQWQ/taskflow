@@ -13,6 +13,7 @@ type Config struct {
 	DBPort     string `mapstructure:"DB_PORT"`
 	ServerPort string `mapstructure:"SERVER_PORT"`
 	AppEnv     string `mapstructure:"APP_ENV"`
+	JWTSecret  string `mapstructure:"JWT_SECRET"`
 }
 
 func LoadConfig() *Config {
