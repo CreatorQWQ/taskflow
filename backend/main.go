@@ -20,7 +20,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(userSvc)
 
 	// 3. 初始化路由
-	r := router.InitRouter(authHandler)
+	r := router.InitRouter(authHandler, cfg.JWTSecret)
 
 	logger.Log.Infof("服务正在启动，端口: %s", cfg.ServerPort)
 	r.Run(":" + cfg.ServerPort)
