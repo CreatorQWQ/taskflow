@@ -9,14 +9,41 @@ void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 监听认证状态
+    final authState = ref.watch(authProvider);
+
     return MaterialApp(
       title: 'TaskFlow',
-      home: LoginScreen(),
+      // 核心逻辑：如果状态是 authenticated，显示主页，否则显示登录页
+      home: authState.status == AuthStatus.authenticated 
+          ? const HomeScreen() 
+          : LoginScreen(),
+    );
+  }
+}
+
+// 简单的主页组件
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("我的任务清单"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => ref.read(authProvider.notifier).logout(),
+          )
+        ],
+      ),
+      body: const Center(child: Text("欢迎回来！任务列表开发中...")),
     );
   }
 }

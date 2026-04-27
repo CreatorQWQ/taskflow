@@ -31,6 +31,11 @@ class AuthNotifier extends Notifier<AuthState> {
       state = AuthState(status: AuthStatus.error, errorMessage: e.toString());
     }
   }
+
+  Future<void> logout() async {
+    await ref.read(storageProvider).delete(key: 'jwt_token');
+    state = AuthState(status: AuthStatus.unauthenticated);
+  }
 }
 
 // 对应的 Provider 也要换成 NotifierProvider
