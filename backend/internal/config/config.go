@@ -17,6 +17,7 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
+	viper.AutomaticEnv() // 开启自动读取环境变量
 	viper.SetConfigFile(".env")
 
 	if err := viper.ReadInConfig(); err != nil {

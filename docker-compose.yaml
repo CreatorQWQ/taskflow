@@ -1,25 +1,26 @@
 version: '3.8'
-
 services:
-  # 数据库：PostgreSQL
-  postgres:
+  db:
     image: postgres:15-alpine
-    container_name: taskflow_db
+    restart: always # 挂了自动重启
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-      POSTGRES_DB: taskflow
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: 123456 # 换成复杂的密码
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
-  # 缓存：Redis (用于后续的限流或 Token 缓存)
-  redis:
-    image: redis:7-alpine
-    container_name: taskflow_redis
+  backend:
+    build: ./backend
+    restart: always
     ports:
-      - "6379:6379"
+      - "8080:8080"
+    environment:
+      - DB_HOST=db
+      - DB_USER=postgres
+      - DB_PASSWORD=123456
+      - DB_NAME=taskflow
+      - JWT_SECRET=your_production_secret
+    depends_on:
+      - db
 
 volumes:
-  postgres_data:
+  pgdata:
