@@ -4,6 +4,7 @@ import (
 	"github.com/CreatorQWQ/taskflow/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type TaskHandler struct {
@@ -48,4 +49,39 @@ func (h *TaskHandler) ListTasks(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, tasks)
+}
+
+// ToggleStatus 切换状态
+func (h *TaskHandler) ToggleStatus(c *gin.Context) {
+	// 将字符串 ID 转换为 uint
+	taskIDStr := c.Param("id")
+	taskID, err := strconv.ParseUint(taskIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+
+	userID, _ := c.Get("current_user_id")
+	if err := h.svc.ToggleTaskStatus(uint(taskID), userID.(uint)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "更新成功"})
+}
+
+// Delete 删除
+func (h *TaskHandler) Delete(c *gin.Context) {
+	taskIDStr := c.Param("id")
+	taskID, err := strconv.ParseUint(taskIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的ID"})
+		return
+	}
+
+	userID, _ := c.Get("current_user_id")
+	if err := h.svc.DeleteTask(uint(taskID), userID.(uint)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "删除失败"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "删除成功"})
 }

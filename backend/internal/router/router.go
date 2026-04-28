@@ -11,7 +11,7 @@ func InitRouter(h *handler.AllHandlers, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	// 跨域中间件 (可选，如果以后 Flutter 跑在 Web 端需要)
-	r.Use(gin.Recovery(), gin.Logger())
+	r.Use(gin.Recovery())
 
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -47,8 +47,10 @@ func InitRouter(h *handler.AllHandlers, jwtSecret string) *gin.Engine {
 		// 2. 任务路由 (受中间件保护)
 		tasks := v1.Group("/tasks").Use(middleware.AuthMiddleware(jwtSecret))
 		{
-			tasks.POST("/", h.Task.CreateTask) // 创建任务
-			tasks.GET("/", h.Task.ListTasks)   // 获取任务列表
+			tasks.POST("/", h.Task.CreateTask)              // 创建任务
+			tasks.GET("/", h.Task.ListTasks)                // 获取任务列表
+			tasks.PATCH("/:id/toggle", h.Task.ToggleStatus) // 使用 PATCH 表示部分更新
+			tasks.DELETE("/:id", h.Task.Delete)             // 使用 DELETE 表示删除
 		}
 
 		// 以后可以在这里加任务模块路由
