@@ -39,9 +39,84 @@ class HomeScreen extends ConsumerWidget {
                   // 确保即使列表项很少，也能下拉刷新
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: tasks.length,
+                  // 在 ListView.builder 的 itemBuilder 内部
                   itemBuilder: (context, index) {
                     final task = tasks[index];
-                    return ListTile(title: Text(task.title));
+
+                    // 使用 Dismissible 实现侧滑删除
+                    return Dismissible(
+                      key: Key(task.id.toString()), // 必须提供唯一的 Key
+                      direction: DismissDirection.endToStart, // 只允许从右向左滑
+                      // 滑动时的背景（红色删除底色）
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+
+                      // 确认删除后的回调
+                      onDismissed: (direction) {
+                        ref.read(taskListProvider.notifier).deleteTask(task.id);
+                        // 提示用户
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("任务已删除"),
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
+                      },
+
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        child: ListTile(
+                          // 左侧：状态勾选框
+                          leading: IconButton(
+                            icon: Icon(
+                              task.status == 'completed'
+                                  ? Icons.check_circle
+                                  : Icons.radio_button_unchecked,
+                              color: task.status == 'completed'
+                                  ? Colors.green
+                                  : Colors.grey,
+                            ),
+                            onPressed: () {
+                              ref
+                                  .read(taskListProvider.notifier)
+                                  .toggleTaskStatus(task.id);
+                            },
+                          ),
+
+                          // 中间：标题和内容
+                          title: Text(
+                            task.title,
+                            style: TextStyle(
+                              // 如果已完成，加中划线，颜色变淡
+                              decoration: task.status == 'completed'
+                                  ? TextDecoration.lineThrough                      
+                                  : null,
+                              color: task.status == 'completed'
+                                  ? Colors.grey
+                                  : Colors.black87,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          subtitle: Text(task.content),
+
+                          // 右侧：时间显示
+                          trailing: Text(
+                            "${task.createdAt.month}/${task.createdAt.day}",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
                   },
                 ),
         ),

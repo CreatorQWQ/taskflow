@@ -35,6 +35,35 @@ class TaskNotifier extends AsyncNotifier<List<TaskModel>> {
     // 2. 【神器】让当前 Provider 失效，Riverpod 会自动重新调用 build() 去后端抓取最新列表
     ref.invalidateSelf();
   }
+
+  // 1. 切换任务状态
+  Future<void> toggleTaskStatus(int taskId) async {
+    try {
+      final dio = ref.read(dioProvider);
+      // 调用我们测试通的 PATCH 接口
+      await dio.patch('/tasks/$taskId/toggle');
+
+      // 成功后，刷新列表
+      ref.invalidateSelf();
+    } catch (e) {
+      print("切换状态失败: $e");
+      // 这里以后可以加个 Toast 提示用户
+    }
+  }
+
+  // 2. 删除任务
+  Future<void> deleteTask(int taskId) async {
+    try {
+      final dio = ref.read(dioProvider);
+      // 调用我们测试通的 DELETE 接口
+      await dio.delete('/tasks/$taskId');
+
+      // 成功后，刷新列表
+      ref.invalidateSelf();
+    } catch (e) {
+      print("删除失败: $e");
+    }
+  }
 }
 
 // 4. 定义全局 Provider
