@@ -23,11 +23,13 @@ func NewRepository(cfg *config.Config) *Repository {
 		logger.Log.Fatalf("数据库连接失败: %v", err)
 	}
 
-	// 自动迁移数据库表
-	if err := db.AutoMigrate(&model.User{}); err != nil {
+
+	err = db.AutoMigrate(model.GetModels()...) 
+	if err != nil {
 		logger.Log.Fatalf("数据库迁移失败: %v", err)
 	}
 	logger.Log.Info("数据库初始化成功")
+	
 
 	return &Repository{
 		DB: db,

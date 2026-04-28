@@ -2,13 +2,12 @@ package router
 
 import (
 	"github.com/CreatorQWQ/taskflow/internal/handler"
-	"github.com/gin-gonic/gin"
 	"github.com/CreatorQWQ/taskflow/internal/middleware"
-
+	"github.com/gin-gonic/gin"
 )
 
 // InitRouter 初始化所有路由
-func InitRouter(authHandler *handler.AuthHandler, jwtSecret string) *gin.Engine {
+func InitRouter(h *handler.AllHandlers, jwtSecret string) *gin.Engine {
 	r := gin.Default()
 
 	// 跨域中间件 (可选，如果以后 Flutter 跑在 Web 端需要)
@@ -26,8 +25,8 @@ func InitRouter(authHandler *handler.AuthHandler, jwtSecret string) *gin.Engine 
 		// 认证模块路由
 		auth := v1.Group("/auth")
 		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
+			auth.POST("/register", h.Auth.Register)
+			auth.POST("/login", h.Auth.Login)
 		}
 
 		// 受保护接口：需要 Token
@@ -43,6 +42,13 @@ func InitRouter(authHandler *handler.AuthHandler, jwtSecret string) *gin.Engine 
 					"user_id": userID,
 				})
 			})
+		}
+
+		// 2. 任务路由 (受中间件保护)
+		tasks := v1.Group("/tasks").Use(middleware.AuthMiddleware(jwtSecret))
+		{
+			tasks.POST("/", h.Task.CreateTask) // 创建任务
+			tasks.GET("/", h.Task.ListTasks)   // 获取任务列表
 		}
 
 		// 以后可以在这里加任务模块路由
