@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../api/api_client.dart';
 import 'auth_state.dart';
@@ -9,7 +8,20 @@ class AuthNotifier extends Notifier<AuthState> {
   // 在 Notifier 中，初始化状态写在 build 方法里
   @override
   AuthState build() {
-    return AuthState.initial();
+    checkAuthStatus(); 
+    return AuthState(status: AuthStatus.checking);
+  }
+
+  Future<void> checkAuthStatus() async {
+    final storage = ref.read(storageProvider);
+    final token = await storage.read(key: 'jwt_token');
+
+    if (token != null) {
+      // 如果有 Token，暂时认为已登录
+      state = AuthState(status: AuthStatus.authenticated);
+    } else {
+      state = AuthState(status: AuthStatus.unauthenticated);
+    }
   }
 
   Future<void> login(String username, String password) async {

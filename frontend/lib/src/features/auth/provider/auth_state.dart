@@ -1,4 +1,4 @@
-enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
+enum AuthStatus { initial, checking,loading, authenticated, unauthenticated, error }
 
 class AuthState {
   final AuthStatus status;
