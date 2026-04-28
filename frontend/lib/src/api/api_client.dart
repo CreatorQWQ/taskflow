@@ -16,7 +16,8 @@ final dioProvider = Provider((ref) {
       // Android 模拟器访问电脑后端请用 10.0.2.2
       // iOS 模拟器请用 127.0.0.1
       // 真机调试请用你电脑的局域网 IP (例如 192.168.1.5)
-      baseUrl: 'http://192.168.0.3:8080/api/v1',
+      // baseUrl: 'http://192.168.0.3:8080/api/v1',
+      baseUrl: 'http://119.28.85.13/api/v1',
       connectTimeout: const Duration(seconds: 10), // 10 秒连接超时
       receiveTimeout: const Duration(seconds: 5), // 5 秒接收超时
     ),
