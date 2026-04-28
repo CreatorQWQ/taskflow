@@ -72,3 +72,30 @@ final taskListProvider = AsyncNotifierProvider<TaskNotifier, List<TaskModel>>(
     return TaskNotifier();
   },
 );
+
+// 这是一个派生 Provider：它依赖于 taskListProvider
+// 只要任务列表发生变化（增删改），这个统计数据会自动重新计算
+final taskStatsProvider = Provider((ref) {
+  // 1. 获取当前所有的任务
+  final taskAsync = ref.watch(taskListProvider);
+
+  // 2. 利用 AsyncValue 的 data 属性进行计算
+  return taskAsync.maybeWhen(
+    data: (tasks) {
+      final total = tasks.length;
+      final completed = tasks.where((t) => t.status == 'completed').length;
+      final pending = total - completed;
+      final percent = total == 0 ? 0.0 : (completed / total);
+      
+      return {
+        'total': total,
+        'completed': completed,
+        'pending': pending,
+        'percent': percent,
+      };
+    },
+    orElse: () => {
+      'total': 0, 'completed': 0, 'pending': 0, 'percent': 0.0
+    },
+  );
+});

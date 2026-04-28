@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/provider/auth_provider.dart';
 import '../provider/task_provider.dart';
+import 'widgets/task_summary_card.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -20,22 +21,19 @@ class HomeScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: taskAsync.when(
-        data: (tasks) => RefreshIndicator(
-          // 当用户下拉时，触发这个方法
-          onRefresh: () => ref.refresh(taskListProvider.future),
-          child: tasks.isEmpty
-              ? const Center(
-                  // 注意：如果列表为空，ListView 必须铺满全屏，下拉刷新才有效
-                  child: SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: SizedBox(
-                      height: 500,
-                      child: Center(child: Text("暂无任务")),
-                    ),
-                  ),
-                )
-              : ListView.builder(
+      body: Column(
+        children: [
+          // 1. 顶部的统计卡片
+          const TaskSummaryCard(),
+
+          // 2. 下面的任务列表（用 Expanded 包裹，让它占据剩余空间）
+          Expanded(
+            child: taskAsync.when(
+              data: (tasks) => RefreshIndicator(
+                onRefresh: () => ref.refresh(taskListProvider.future),
+                child: tasks.isEmpty
+                    ? const Center(child: Text("暂无任务"))
+                    : ListView.builder(
                   // 确保即使列表项很少，也能下拉刷新
                   physics: const AlwaysScrollableScrollPhysics(),
                   itemCount: tasks.length,
@@ -96,7 +94,7 @@ class HomeScreen extends ConsumerWidget {
                             style: TextStyle(
                               // 如果已完成，加中划线，颜色变淡
                               decoration: task.status == 'completed'
-                                  ? TextDecoration.lineThrough                      
+                                  ? TextDecoration.lineThrough
                                   : null,
                               color: task.status == 'completed'
                                   ? Colors.grey
@@ -119,14 +117,12 @@ class HomeScreen extends ConsumerWidget {
                     );
                   },
                 ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(taskListProvider), // 失败点击刷新
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => Center(child: Text("加载失败: $err")),
+            ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTaskSheet(context, ref),
